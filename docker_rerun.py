@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 """Re-runs a docker container using the same arguments as before.
 
 Given the name of a container, the previous arguments are determined
@@ -17,8 +17,12 @@ arguments and the container object.
 import argparse
 import inspect
 import json
+import logging
 import subprocess
 import sys
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Container(object):
@@ -331,18 +335,19 @@ def main(argv, out):
         commands = [['docker', 'pull', container.image]] + commands
 
     if args.dry_run:
-        print('Performing dry run for container %s. The following would be ' \
-              'executed:' % args.container, file=out)
+        LOG.info(('Performing dry run for container %s.'
+                  'The following would beexecuted:'), args.container)
         for command in commands:
-            print(' '.join(command), file=out)
+            LOG.info(' '.join(command))
     else:
-        print('Re-running container %s...' % args.container, file=out)
+        LOG.info('Re-running container %s...', args.container)
         for command in commands:
             subprocess.check_call(command)
 
 
 def entrypoint():
     """Entrypoint for script use."""
+    logging.basicConfig(level=logging.INFO)
     main(sys.argv[1:], sys.stdout)
 
 
